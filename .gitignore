@@ -3,3 +3,10 @@
 *.tfstate*
 
 .DS_Store
+
+*node_modules/
+*dist/
+*out/
+*yarn-error.log
+*~*
+*#*

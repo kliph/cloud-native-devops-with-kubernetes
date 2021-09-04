@@ -1,0 +1,89 @@
+* Cloud Native Devops with Kubernetes
+* Ch 2 First Steps with Kubernetes
+  #+begin_src sh
+    docker container run -p 9999:8888 --name hello cloudnatived/demo:hello &
+    curl -s http://localhost:9999
+
+  #+end_src
+** Container
+   #+begin_src dockerfile :tangle myhello/Dockerfile
+     FROM node:16-alpine3.11 AS deps
+
+     WORKDIR /app/
+     COPY package.json /app/
+     COPY yarn.lock /app/
+     RUN yarn install --frozen-lockfile
+
+     FROM node:16-alpine3.11 AS build
+     WORKDIR /app/
+     COPY --from=deps /app/node_modules /app/node_modules
+     COPY package.json /app/
+     COPY tsconfig.json /app/
+     COPY ./src/*.ts /app/src/
+     RUN yarn compile
+     RUN yarn build
+
+     FROM alpine
+     RUN apk update && \
+	 apk add --no-cache libstdc++ libgcc ca-certificates && \
+	 rm -rf /var/cache/apk/*
+     WORKDIR /app/
+     COPY --from=build /app/dist/ .
+     CMD ./myhello
+
+   #+end_src
+
+Setting up typescript to compile in a Node JS container. See https://losikov.medium.com/part-1-project-initial-setup-typescript-node-js-31ba3aa7fbf1 for typescript setup.
+
+Following https://medium.com/@evenchange4/deploy-a-commercial-next-js-application-with-pkg-and-docker-5c73d4af2ee.
+
+#+begin_src typescript :tangle myhello/src/app.ts
+  import express from "express";
+
+  const app = express();
+  const port = 3003;
+
+  app.get("/", (req, res) => {
+    res.send("Hello World!\n");
+  });
+
+  app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`);
+  });
+#+end_src
+
+#+begin_src sh
+  docker image build -t myhello .
+  docker container run -p 3003:3003 myhello
+  curl -s http://localhost:3003
+#+end_src
+
+*** Cleaning up
+    #+begin_src sh
+      yarn clean
+    #+end_src
+
+ I also had to stop and delete containers in Docker Desktop to clean up the containers on my machine.
+
+** With Kubernetes
+
+Had to do some additional steps to set up my kubernetes context.  See https://docs.docker.com/desktop/kubernetes/.
+
+#+begin_src sh
+  kubectl config get-contexts
+  kubectl config use-context docker-desktop
+#+end_src
+
+** Running the pod
+
+#+begin_src sh
+kubectl run myhello --image=myhello:latest --port=3003 --labels app=myhello --image-pull-policy='Never'
+#+end_src
+
+I then set up port forwarding in =k9s=
+
+#+begin_src sh
+  k9s
+  # F to enable port forwarding
+  # C-k to kill the pod
+#+end_src
