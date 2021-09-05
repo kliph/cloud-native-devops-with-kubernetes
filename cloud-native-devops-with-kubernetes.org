@@ -87,3 +87,22 @@ I then set up port forwarding in =k9s=
   # F to enable port forwarding
   # C-k to kill the pod
 #+end_src
+
+* Ch4 Working with Kubernetes Objects
+** Deployment
+   #+begin_src sh
+     cd k8s-demo
+     kubectl apply -f deployment.yaml
+
+   #+end_src
+** Service
+   #+begin_src sh
+     cd k8s-demo
+     kubectl apply -f service.yaml
+
+   #+end_src
+** Cleaning up
+   #+begin_src sh
+     kubectl delete -f k8s-demo/
+
+   #+end_src
