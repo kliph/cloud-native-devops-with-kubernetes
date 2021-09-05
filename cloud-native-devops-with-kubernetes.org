@@ -104,5 +104,11 @@ I then set up port forwarding in =k9s=
 ** Cleaning up
    #+begin_src sh
      kubectl delete -f k8s-demo/
-
+     # or
+     kubectl delete all --selector app=demo
+   #+end_src
+** Helm
+   #+begin_src sh
+     helm install demo helm3-demo/
+     helm uninstall demo helm3-demo/
    #+end_src

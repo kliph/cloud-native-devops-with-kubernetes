@@ -1,0 +1,8 @@
+environment: development
+container:
+  name: demo
+  port: 3003
+  image: myhello
+  imagePullPolicy: Never
+  tag: latest
+replicas: 1
