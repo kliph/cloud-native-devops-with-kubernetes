@@ -108,7 +108,44 @@ I then set up port forwarding in =k9s=
      kubectl delete all --selector app=demo
    #+end_src
 ** Helm
+
    #+begin_src sh
      helm install demo helm3-demo/
      helm uninstall demo helm3-demo/
    #+end_src
+* Ch 5 Managing Resources
+** Namespaces
+I thought I would need a =namespace.yaml= file to specify my app's namespace, but =helm= makes it easy when installing:
+
+#+begin_src sh
+  helm install demo helm3-demo/ --namespace demo --create-namespace
+  # and clean up with
+  helm uninstall demo --namespace demo
+#+end_src
+
+
+** Ok I've got my service running how do I talk to it from the outside world?
+For trying to talk to services and pods see https://kubernetes.io/docs/concepts/services-networking/network-policies/ and https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+
+See also https://kubernetes.io/docs/tasks/administer-cluster/access-cluster-services/.
+
+The service.yaml defines a LoadBalancer exposing port 80 on the Cluster's external IP, which is localhost in this case (I think it's that by default).
+#+begin_src yaml
+  spec:
+    ports:
+    - port: 80
+      protocol: TCP
+      targetPort: {{ .Values.container.port }}
+    selector:
+      app: {{ .Values.container.name }}
+    type: LoadBalancer
+#+end_src
+
+You can see your Service's output by
+
+#+begin_src sh
+  curl -s http://localhost:80
+#+end_src
+
+You can go to the Services view in k9s to see this information.
+
