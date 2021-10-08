@@ -149,3 +149,12 @@ You can see your Service's output by
 
 You can go to the Services view in k9s to see this information.
 
+* Ch 7 Kubernetes Power Tool
+** Autocompleting kubectl commands
+For zsh which I use at work
+#+begin_src sh
+  # Load the kubectl completion code for zsh[1] into the current shell
+  source <(kubectl completion zsh)
+  # Set the kubectl completion code for zsh[1] to autoload on startup
+  kubectl completion zsh > "${fpath[1]}/_kubectl"
+#+end_src
