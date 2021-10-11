@@ -158,3 +158,48 @@ For zsh which I use at work
   # Set the kubectl completion code for zsh[1] to autoload on startup
   kubectl completion zsh > "${fpath[1]}/_kubectl"
 #+end_src
+** Generating resource manifests
+   #+begin_src sh
+     kubectl create deployment demo --image=cloudnatived/demo:hello --dry-run=client -o yaml > deployment.yaml
+
+     kubectl apply -f deployment.yaml
+
+     kubectl delete -f deployment.yaml
+
+   #+end_src
+** Executing commands on containers
+
+   #+begin_src sh
+     cd executing-commands-on-containers/
+
+     kubectl apply -f pod.yaml
+
+     # In k9s, press s on the container to get a shell
+
+     kubectl delete -f pod.yaml
+   #+end_src
+** Running containers for troubleshooting
+   #+begin_src sh
+     kubectl run demo --image cloudnatived/demo:hello --expose --port 8888
+
+     kubectl run nslookup --image=busybox:1.28 --rm -it --restart=Never --command -- nslookup demo
+
+     kubectl run wget --image=busybox:1.28 --rm -it --restart=Never --command -- wget -qO- http://demo:8888
+
+     kubectl delete service demo && kubectl delete pod demo
+   #+end_src
+** Busyboxed container
+   #+begin_src dockerfile :tangle busy-boxed-container/Dockerfile
+     FROM golang:1.14-alpine AS build
+
+     WORKDIR /src/
+     COPY main.go go.* /src/
+     RUN CGO_ENABLED=0 go build -o /bin/demo
+
+     FROM scratch
+     COPY --from=build /bin/demo /bin/demo
+     COPY --from=busybox:1.28 /bin/busybox /bin/busybox
+     ENTRYPOINT ["/bin/demo"]
+   #+end_src
+
+Produces an ≈8MB image.  Nice.
